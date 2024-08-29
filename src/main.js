@@ -1,55 +1,55 @@
 // Описаний у документації
 import iziToast from 'izitoast';
-// Додатковий імпорт стилів
-import 'izitoast/dist/css/iziToast.min.css';
-// Описаний у документації
 import SimpleLightbox from 'simplelightbox';
-// Додатковий імпорт стилів
-import 'simplelightbox/dist/simple-lightbox.min.css';
 import imgUrl from '/img/xmark.svg';
+import { markupGallery } from '/js/render-functions.js';
+import { fetchGallery } from '/js/pixabay-api.js';
+
 const searchFormEl = document.querySelector('.js-search-form');
-// q=
-// const searchParams = new URLSearchParams({
-//     key: 16196075-bdcf118405fead11ea5570a4c,
-//     q:,
-//     image_type: photo,
-//     orientation: horizontal,
-// safesearch: true,
-// });
-// <p>Loading images, please wait...</p>
-//  iziToast.error({
-//         message: "Sorry, there are no images matching your search query. Please try again!",
-//         color: '#EF4040',
-//         position: 'topRight',
-//         iconUrl: imgUrl,
-//         iconColor: 'white',
-//         messageColor: 'white',
-//         timeout: 4000,
-//         titleColor: 'white',
-//         progressBar: 'false',
-//       });
+const galleryEl = document.querySelector('.js-gallery');
+const loaderEl = document.querySelector('.loader');
+// initialization SimpleLightbox
+const gallerySL = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
+
 const onSearchFormSubmit = event => {
   event.preventDefault();
-  const searchingWords = searchFormEl.nextElementSibling.picture_query.value;
-  console.dir(searchingWords);
+  loaderEl.classList.remove('is-hidden');
+  const searchingItQ = searchFormEl.elements.picture_query.value;
+
+  fetchGallery(searchingItQ)
+    .then(data => {
+      if (data.hits.length === 0) {
+        iziToast.error({
+          message:
+            'Sorry, there are no images matching your search query. Please try again!',
+          color: '#EF4040',
+          position: 'topRight',
+          iconUrl: imgUrl,
+          iconColor: 'white',
+          messageColor: 'white',
+          timeout: 4000,
+          titleColor: 'white',
+          progressBar: 'false',
+        });
+        galleryEl.innerHTML = '';
+        searchFormEl.reset();
+        return;
+      }
+      const createGalleryCards = data.hits
+        .map(imgDetails => markupGallery(imgDetails))
+        .join('');
+
+      galleryEl.innerHTML = createGalleryCards;
+      gallerySL.refresh(); // Destroys and reinitializes the lightbox
+    })
+    .catch(error => {
+      console.log(error);
+    })
+    .finally(() => {
+      loaderEl.classList.add('is-hidden');
+    });
 };
-
-searchFormEl.addEventListener('submit', onSearchFormSubmit());
-// fetch('https://pixabay.com/api/')
-//     .then((response) => {
-//         if (!response.ok) {
-//             throw new Error(response.status);
-//         }
-//         return response.json;
-//     })
-//     .then((users) => {
-//         const markup = users.map((user) => {
-//             return <li></li>;
-//         })
-//             .join(" ");
-//         userList.insertAdjasentHTML("beforeend", markup);
-//     })
-//     .catch((error) => console.log(error);
-//     );
-
-// });
+searchFormEl.addEventListener('submit', onSearchFormSubmit);
