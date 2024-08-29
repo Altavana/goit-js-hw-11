@@ -1,7 +1,7 @@
 export const markupGallery = imgInfo => {
   return `<li class="gallery-card"> <a class="gallery-link" href="${imgInfo.largeImageURL}">
               <img class="gallery-img" src="${imgInfo.webformatURL}" alt="${imgInfo.tags}" /> </a>
-               <ul class="img-descr">
+        <ul class="img-descr">
         <li class="img-descr-item">
           <h2 class="img-descr-title">Likes</h2>
           <p class="img-descr-points">${imgInfo.likes}</p>
